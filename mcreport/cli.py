@@ -374,7 +374,7 @@ def create_pdf(pdf, output, sampleid, df_counts, workflow_type, tumor_marker,
     pdf.ln()
     pdf.set_font("Arial", size=9)
     for _, row in df_cells_mm2.iterrows():
-        cell_type_text = str(row['Cell type'])
+        cell_type_text = str(row['Cell type']).encode('latin1', errors='ignore').decode('latin1')
         pdf.cell(50, 4, cell_type_text, 0)
         pdf.cell(50, 4, str(row['Total']), 0)
         pdf.cell(50, 4, str(row['Tumor area']), 0)
