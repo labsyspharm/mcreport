@@ -77,6 +77,7 @@ def parse_args():
     parser.add_argument("--sample_marker", type=str, default="Hoechst", help="DNA marker")
     parser.add_argument("--tumor_marker", type=str, default="Pan-CK", help="Tumor marker")
     parser.add_argument("--alpha_value_tumor", type=float, default=0.001, help="Alpha value for tumor clustering")
+    parser.add_argument("--immunoProfile", action="store_true", help="Run immunoprofile analysis (default: False)")
     return parser.parse_args()
 
 def compute_areas(poly, px_size):
@@ -328,7 +329,7 @@ class MyPDF(FPDF):
         self.cell(0, 5, "For Research Use Only", 0, 0, align='R')
 
 def create_pdf(pdf, output, sampleid, df_counts, workflow_type, tumor_marker,
-               df_cells_mm2, immunoscore_df, author):
+               df_cells_mm2, immunoscore_df, immunoProfile, author):
     pdf.add_page()
     pdf.image(os.path.join(output, "sample_he_plot.png"), x=8, y=35, w=200)
     pdf.image(os.path.join(output, "cell_ratios_and_counts_plot.png"), x=8, y=115, w=200)
@@ -380,7 +381,7 @@ def create_pdf(pdf, output, sampleid, df_counts, workflow_type, tumor_marker,
         pdf.cell(50, 4, str(row['Tumor area']), 0)
         pdf.cell(50, 4, str(row['Other']), 0)
         pdf.ln()
-    if not immunoscore_df.empty:
+    if immunoProfile:
         pdf.add_page()
         pdf.set_xy(10, 25)
         pdf.set_font("Arial", size=11, style="B")
@@ -414,7 +415,7 @@ def main():
     
     # Set parameters from args
     alpha_value_tumor = args.alpha_value_tumor
-    immunoProfile = False  # Set to True to run immunoprofile steps
+    immunoProfile = args.immunoProfile
     sampleid = args.sampleid
     author = args.author
     sample_marker = args.sample_marker
@@ -930,8 +931,8 @@ def main():
     pdf = MyPDF('P', 'mm', 'Letter')
     pdf.reference_folder = reference_folder
     pdf.author = author
-    # For this example, an empty DataFrame is passed for immunoscore_df; adjust as needed.
-    create_pdf(pdf, output, sampleid, df_counts, workflow_type, tumor_marker, df_cells_mm2, pd.DataFrame(), author)
+    
+    create_pdf(pdf, output, sampleid, df_counts, workflow_type, tumor_marker, df_cells_mm2, immunoscore_df, immunoProfile, author)
     
     end_time = time.time()
     print(f"Script running time: {round((end_time - start_time) / 60, 2)} minutes")
